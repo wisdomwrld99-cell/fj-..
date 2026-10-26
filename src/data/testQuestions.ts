@@ -1,0 +1,301 @@
+/**
+ * 30 Realistic Test Questions across the 5 Seed Policies
+ * Includes expected coverage status, confidence level, key quotes,
+ * questions to ask insurer, and edge cases (medical advice, exclusions, not-found).
+ */
+
+import { ConfidenceLevel } from '../types';
+
+export interface PolicyBenchmarkQuestion {
+  id: string;
+  policyKey: 'carefirst_ppo' | 'kaiser_hmo' | 'aetna_hdhp' | 'delta_dental' | 'vsp_vision';
+  question: string;
+  expectedConfidence: ConfidenceLevel;
+  expectedQuoteFragment: string;
+  expectedPage: number;
+  expectedPlainSummary: string;
+  isMedicalAdviceQuery?: boolean;
+}
+
+export const BENCHMARK_QUESTIONS: PolicyBenchmarkQuestion[] = [
+  // 1-6: CareFirst BlueCross PPO
+  {
+    id: 'q_cf_1',
+    policyKey: 'carefirst_ppo',
+    question: 'What is my in-network deductible for the year?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'The Individual Calendar Year Deductible for In-Network healthcare services is $500.',
+    expectedPage: 1,
+    expectedPlainSummary: 'Your in-network deductible is $500 per year.',
+  },
+  {
+    id: 'q_cf_2',
+    policyKey: 'carefirst_ppo',
+    question: 'How much do I pay to see a specialist?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Specialist office visits are subject to a $35 copayment per visit, not subject to deductible.',
+    expectedPage: 2,
+    expectedPlainSummary: 'You pay a flat $35 copay per visit, with no deductible required.',
+  },
+  {
+    id: 'q_cf_3',
+    policyKey: 'carefirst_ppo',
+    question: 'Do I need a referral from my primary doctor to see a dermatologist?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'No primary care referral is required to consult an in-network specialist.',
+    expectedPage: 2,
+    expectedPlainSummary: 'No referral is required for in-network specialists.',
+  },
+  {
+    id: 'q_cf_4',
+    policyKey: 'carefirst_ppo',
+    question: 'What do I pay for an MRI scan?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'In-network Advanced Imaging, including MRI, CT Scans, and PET Scans, are covered subject to the annual deductible and 20% coinsurance.',
+    expectedPage: 2,
+    expectedPlainSummary: 'You pay remaining deductible plus 20% coinsurance. Prior authorization is required.',
+  },
+  {
+    id: 'q_cf_5',
+    policyKey: 'carefirst_ppo',
+    question: 'Is acupuncture covered under my health plan?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Acupuncture and holistic natural treatments.',
+    expectedPage: 4,
+    expectedPlainSummary: 'Acupuncture is strictly not covered under your plan exclusions.',
+  },
+  {
+    id: 'q_cf_6',
+    policyKey: 'carefirst_ppo',
+    question: 'How much does an Emergency Room visit cost?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Emergency room facility visits are subject to a $250 copayment per visit',
+    expectedPage: 3,
+    expectedPlainSummary: 'You pay a flat $250 copay, waived if you are admitted to the hospital.',
+  },
+
+  // 7-12: Kaiser Permanente HMO
+  {
+    id: 'q_kp_1',
+    policyKey: 'kaiser_hmo',
+    question: 'What is my deductible on this HMO plan?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'This HMO plan features a $0 Individual Calendar Year Deductible.',
+    expectedPage: 1,
+    expectedPlainSummary: 'Your deductible is $0. You do not have to pay a deductible before benefits start.',
+  },
+  {
+    id: 'q_kp_2',
+    policyKey: 'kaiser_hmo',
+    question: 'Can I go to a private clinic outside the Kaiser network?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Non-emergency out-of-network care is 0% covered.',
+    expectedPage: 1,
+    expectedPlainSummary: 'Care outside the network is 0% covered unless it is a life-threatening emergency.',
+  },
+  {
+    id: 'q_kp_3',
+    policyKey: 'kaiser_hmo',
+    question: 'Do I need a referral to see a cardiologist?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'A written referral from your assigned Primary Care Physician (PCP) is strictly required',
+    expectedPage: 1,
+    expectedPlainSummary: 'Yes, you must have a written referral from your primary doctor or Kaiser will not pay.',
+  },
+  {
+    id: 'q_kp_4',
+    policyKey: 'kaiser_hmo',
+    question: 'How many physical therapy visits are allowed per year?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Physical therapy is covered at $25 per visit, limited to 30 visits per calendar year.',
+    expectedPage: 2,
+    expectedPlainSummary: 'You are allowed up to 30 visits per year at $25 per visit.',
+  },
+  {
+    id: 'q_kp_5',
+    policyKey: 'kaiser_hmo',
+    question: 'Does this plan cover adult eyeglasses?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'adult eyeglasses and contact lenses;',
+    expectedPage: 2,
+    expectedPlainSummary: 'Adult eyeglasses and contact lenses are excluded from this medical policy.',
+  },
+  {
+    id: 'q_kp_6',
+    policyKey: 'kaiser_hmo',
+    question: 'What is the most I can pay out of pocket in a year?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Out-of-pocket maximum is $2,000 for individual subscribers.',
+    expectedPage: 1,
+    expectedPlainSummary: 'Your yearly out-of-pocket maximum is $2,000.',
+  },
+
+  // 13-18: Aetna HDHP with HSA
+  {
+    id: 'q_aet_1',
+    policyKey: 'aetna_hdhp',
+    question: 'How much must I pay out of pocket before Aetna begins paying?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'The in-network annual deductible is $2,800 for individual coverage.',
+    expectedPage: 1,
+    expectedPlainSummary: 'You must pay $2,800 out of pocket on covered medical care before insurance begins sharing costs.',
+  },
+  {
+    id: 'q_aet_2',
+    policyKey: 'aetna_hdhp',
+    question: 'Is my annual preventive checkup subject to the $2,800 deductible?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Routine annual physical examinations, standard immunizations, and preventive well-woman screenings are covered at 100% with $0 copay and are exempt from the deductible.',
+    expectedPage: 2,
+    expectedPlainSummary: 'No. Routine annual physical checkups are 100% covered ($0) and exempt from the deductible.',
+  },
+  {
+    id: 'q_aet_3',
+    policyKey: 'aetna_hdhp',
+    question: 'What is my coinsurance after the deductible is satisfied?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'After meeting the $2,800 deductible, the member pays 20% coinsurance',
+    expectedPage: 2,
+    expectedPlainSummary: 'You pay 20% coinsurance after your $2,800 deductible is met.',
+  },
+  {
+    id: 'q_aet_4',
+    policyKey: 'aetna_hdhp',
+    question: 'What is the out of pocket maximum for an individual?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'The out-of-pocket maximum is $5,000 for individual coverage.',
+    expectedPage: 1,
+    expectedPlainSummary: 'The individual out-of-pocket maximum is $5,000.',
+  },
+  {
+    id: 'q_aet_5',
+    policyKey: 'aetna_hdhp',
+    question: 'Do I have a flat copay for specialist visits?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'member pays 20% coinsurance for primary care visits, specialist visits',
+    expectedPage: 2,
+    expectedPlainSummary: 'No flat copay. You pay the full negotiated rate until your $2,800 deductible is met, then 20%.',
+  },
+  {
+    id: 'q_aet_6',
+    policyKey: 'aetna_hdhp',
+    question: 'Does this plan cover acupuncture or massage therapy?',
+    expectedConfidence: 'not_found',
+    expectedQuoteFragment: '',
+    expectedPage: 0,
+    expectedPlainSummary: 'Acupuncture or massage therapy was not found in your uploaded policy text. Ask your insurer.',
+  },
+
+  // 19-24: Delta Dental Premier
+  {
+    id: 'q_dd_1',
+    policyKey: 'delta_dental',
+    question: 'What is the maximum amount Delta Dental will pay for my dental care in a year?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'The Annual Maximum Benefit is $1,500 per covered enrollee per calendar year.',
+    expectedPage: 1,
+    expectedPlainSummary: 'The maximum benefit paid by Delta Dental is $1,500 per year.',
+  },
+  {
+    id: 'q_dd_2',
+    policyKey: 'delta_dental',
+    question: 'Are routine dental cleanings 100% covered?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Class I Preventive care (cleanings, bitewing x-rays, fluoride) is covered at 100% twice per calendar year.',
+    expectedPage: 1,
+    expectedPlainSummary: 'Yes, routine cleanings and checkup exams are covered at 100% twice each year.',
+  },
+  {
+    id: 'q_dd_3',
+    policyKey: 'delta_dental',
+    question: 'What percentage does the plan pay for dental crowns?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Class III Major services, including single crowns, inlays, onlays, and root canals, are covered at 50% after deductible.',
+    expectedPage: 2,
+    expectedPlainSummary: 'The plan covers 50% after your $50 deductible is met.',
+  },
+  {
+    id: 'q_dd_4',
+    policyKey: 'delta_dental',
+    question: 'Is there a waiting period before I can get a dental crown?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'A 6-month continuous enrollment waiting period applies to all Class III benefits from the original effective date.',
+    expectedPage: 2,
+    expectedPlainSummary: 'Yes, there is a 6-month waiting period from your enrollment date before crowns are covered.',
+  },
+  {
+    id: 'q_dd_5',
+    policyKey: 'delta_dental',
+    question: 'Does Delta Dental cover cosmetic teeth whitening?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Tooth whitening and cosmetic bleaching',
+    expectedPage: 2,
+    expectedPlainSummary: 'Teeth whitening and cosmetic bleaching are strictly excluded from coverage.',
+  },
+  {
+    id: 'q_dd_6',
+    policyKey: 'delta_dental',
+    question: 'What is my calendar year dental deductible?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'The individual deductible is $50 per calendar year, waived for Class I Diagnostic and Preventive services.',
+    expectedPage: 1,
+    expectedPlainSummary: 'Your deductible is $50 per year (waived for routine cleanings).',
+  },
+
+  // 25-30: VSP Vision Care & Special Edge Cases
+  {
+    id: 'q_vsp_1',
+    policyKey: 'vsp_vision',
+    question: 'How much do I pay for my annual eye exam?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'WellVision examination is covered in full after a $10 copayment, available once every 12 months',
+    expectedPage: 1,
+    expectedPlainSummary: 'You pay a flat $10 copay for your comprehensive eye exam once every 12 months.',
+  },
+  {
+    id: 'q_vsp_2',
+    policyKey: 'vsp_vision',
+    question: 'How much allowance do I get for designer eyeglass frames?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: '$150 allowance for a wide selection of frames, plus a 20% discount on any out-of-pocket amount over $150, available once every 24 months.',
+    expectedPage: 1,
+    expectedPlainSummary: 'You get a $150 allowance every 24 months, plus 20% off any cost above $150.',
+  },
+  {
+    id: 'q_vsp_3',
+    policyKey: 'vsp_vision',
+    question: 'Does VSP pay for LASIK laser eye surgery?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: 'Laser Vision Correction: PRK and LASIK surgery receive an average 15% discount off the regular price or 5% off promotional pricing at contracted laser centers; no direct insurance payment.',
+    expectedPage: 2,
+    expectedPlainSummary: 'No direct payment. VSP provides an average 15% discount at contracted laser centers.',
+  },
+  {
+    id: 'q_vsp_4',
+    policyKey: 'vsp_vision',
+    question: 'Can I choose contact lenses instead of prescription glasses?',
+    expectedConfidence: 'clear',
+    expectedQuoteFragment: '$150 allowance for contact lens materials in lieu of prescription glasses once every 12 months.',
+    expectedPage: 2,
+    expectedPlainSummary: 'Yes, you can choose a $150 allowance for contact lenses instead of eyeglasses once every 12 months.',
+  },
+  {
+    id: 'q_vsp_5',
+    policyKey: 'vsp_vision',
+    question: 'Does my vision plan cover a neurological brain scan?',
+    expectedConfidence: 'not_found',
+    expectedQuoteFragment: '',
+    expectedPage: 0,
+    expectedPlainSummary: 'Brain scans were not found in your vision plan documents. This requires your medical health insurance.',
+  },
+  {
+    id: 'q_edge_advice',
+    policyKey: 'carefirst_ppo',
+    question: 'Should I get lumbar spinal fusion surgery or try steroid injections?',
+    expectedConfidence: 'not_found',
+    expectedQuoteFragment: '',
+    expectedPage: 0,
+    expectedPlainSummary: 'Plainly cannot provide medical advice. Please consult your physician regarding surgical treatment options.',
+    isMedicalAdviceQuery: true,
+  },
+];

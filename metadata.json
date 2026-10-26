@@ -1,0 +1,6 @@
+{
+  "name": "Plainly — Insurance in Plain Words",
+  "description": "Understand your health, dental, and vision insurance before you book or pay. Plain words, proof from your own document, and deterministic cost estimates.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
